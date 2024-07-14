@@ -12,7 +12,7 @@ class NotificationServiceImplTest {
     NotificationService service = new NotificationServiceImpl(gateway);
 
     @Test
-    void shouldSendAllNotificationsWithinLimits() {
+    void shouldSendAllNotificationsWithinLimits() throws RateLimitedException {
         service.send(NotificationType.STATUS, "this is the firts status", "user1");
         service.send(NotificationType.STATUS, "this is the second status", "user1");
         service.send(NotificationType.NEWS, "this is the daily news", "user1");
@@ -22,19 +22,19 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    void shouldRateLimitsForStatusNotifications() {
+    void shouldRateLimitsForStatusNotifications() throws RateLimitedException {
         // successful ones
         service.send(NotificationType.STATUS, "this is the firts status", "user1");
         service.send(NotificationType.STATUS, "this is the second status", "user1");
-        service.send(NotificationType.STATUS, "this is the firts status for user 2", "user1");
-        service.send(NotificationType.STATUS, "this is the second status for user 2", "user1");
+        service.send(NotificationType.STATUS, "this is the firts status for user 2", "user2");
+        service.send(NotificationType.STATUS, "this is the second status for user 2", "user2");
 
         // should be rate limited
         assertThrows(RateLimitedException.class, () -> service.send(NotificationType.STATUS, "this one should be rate limited", "user1"));
     }
 
     @Test
-    void shouldRateLimitsForNewsNotifications() {
+    void shouldRateLimitsForNewsNotifications() throws RateLimitedException {
         // successful ones
         service.send(NotificationType.NEWS, "this is the daily news", "user1");
         service.send(NotificationType.NEWS, "this is the daily news", "user2");
@@ -44,7 +44,7 @@ class NotificationServiceImplTest {
     }
 
     @Test
-    void shouldRateLimitsForMarketingNotifications() {
+    void shouldRateLimitsForMarketingNotifications() throws RateLimitedException {
         // successful ones
         service.send(NotificationType.MARKETING, "contract me?", "user1");
         service.send(NotificationType.MARKETING, "contract me, the code is working good", "user1");
@@ -53,6 +53,4 @@ class NotificationServiceImplTest {
         // should be rate limited
         assertThrows(RateLimitedException.class, () -> service.send(NotificationType.MARKETING, "Bad marketing is not allowed", "user1"));
     }
-
-
 }
